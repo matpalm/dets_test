@@ -1,5 +1,5 @@
 -module(coeff).
--export([pearson/2]).
+-export([pearson/2,summations/2,coeff/2]).
 %-compile(export_all).
 
 pearson(A,B) ->

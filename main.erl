@@ -5,7 +5,7 @@ write_ratings() ->
     movie_data:start(),
     Ids = movie_data:read_movie_ids(),
     io:format("#movies = ~w\n",[length(Ids)]),
-    util:time("write ratings", fun() -> movie_data:write_movie_ratings(Ids) end),    
+    util:time("write ratings", fun() -> similarity:write_movie_ratings(Ids) end),    
     movie_data:stop(),
     init:stop().
 
