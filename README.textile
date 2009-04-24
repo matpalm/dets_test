@@ -1,15 +1,15 @@
-two parts
-- loading data
-- similarity for a single elem to other elems
+h1. tags
+
+single_process - everything in single process
+seperate_process - similarity in seperate process, but only one
+
+h1. info
 
 large  run over a 1000 movies, 5,010,439 ratings
 medium run over a 100 movies,    837,303 ratings
-
 use large
 
-eg1
-single process
-single node
+h1. single_process
 
 write dets file
 > erl -noshell -s main write_ratings
@@ -46,7 +46,7 @@ procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
  0  0 239304 168268  67716 893548    0    0     0     0  991 3801  9  0 91  0
 
 checksum for calcing first 10 similarity scores (will use later for comparing correctness of impl)
-> erl -noshell -s main calc 1 10
+> erl -noshell -s main checksum 1 10
 
 check 1 551.5850313136399
 check 2 705.608400913402
@@ -59,5 +59,6 @@ check 8 275.9495044398644
 check 9 490.1373811764266
 check 10 599.1407156521689
 
+h1. seperate_process
 
 
