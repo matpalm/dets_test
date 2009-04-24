@@ -61,4 +61,10 @@ check 10 599.1407156521689
 
 h1. seperate_process
 
+> erl -noshell -s main calc 1 10 
+19.372995 s
+
+> erl -noshell -s main checksum 1 10
+all the same
+
 
