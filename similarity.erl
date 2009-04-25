@@ -1,35 +1,54 @@
 -module(similarity).
--export([start/0, stop/0, write_movie_ratings/1, calc_for/2, calc_all_for/2, worker/0]).
+-export([start/0, stop/0, write_movie_ratings/1, write_single_movie_rating/2, calc_for/2, calc_all_for/2, worker_init/1]).
+-include_lib("consts.hrl").
 
 % api
 
 start() ->
-    register(worker, spawn(?MODULE, worker, [])),
-    worker ! start.
+    put(workers, [ spawn(?MODULE, worker_init, [N]) || N <- lists:seq(1,?NUM_WORKERS) ]).
 
 stop() ->
-    worker ! stop.
+    broadcast(stop).
 
 write_movie_ratings(Ids) ->
-    worker ! delete_all_ratings,
+    broadcast(delete_all_ratings),
+    rpc:pmap({?MODULE,write_single_movie_rating}, [get(workers)], Ids).
+%    lists:foreach(
+%      fun(Mid) -> write_single_movie_rating(Mid) end,
+%      Ids).	     
+    
+write_single_movie_rating(Mid, Workers) ->
+    Ratings = movie_data:ratings_for(Mid),
+    io:format("~w ~w 2 #ratings=~w\n",[self(),Mid,length(Ratings)]),
+    RatingsShards = shard:partition_into_shards(Ratings, ?NUM_WORKERS),
+    io:format("~w ~w 3\n",[self(),Mid]),
     lists:foreach(
-      fun(Mid) ->
-	      Ratings = movie_data:ratings_for(Mid),
-	      worker ! { ratings, Mid, Ratings }
+      fun({WorkerPid,RatingsSubList}) -> 
+	      io:format("~w sending ~w ~w ratings\n",[self(),WorkerPid,length(RatingsSubList)]),
+	      WorkerPid ! { ratings, Mid, RatingsSubList }
       end,
-      Ids).
-	     
+      lists:zip(Workers, RatingsShards)
+      ),
+    ok.		
+
 calc_all_for(Mid, Ids) ->	        
     worker ! { calc_all_for, Mid, Ids, self() },
     receive Coeffs -> Coeffs after 60000 -> timeout end.
 
+broadcast(Msg) ->
+    [ W ! Msg || W <- get(workers) ].
+
 % worker
+
+worker_init(N) ->
+    self() ! {start, N},
+    worker().
 
 worker() ->
     receive
-	start ->
-	    io:format("~w start\n",[self()]),
-	    movie_data:start(),
+	{start,N} ->
+	    io:format("~w start #~w\n",[self(),N]),
+	    movie_data:start(N),
 	    worker();
 	stop ->
 	    io:format("~w stop\n",[self()]),
@@ -49,8 +68,10 @@ worker() ->
 	    Pid ! Coeffs,
 	    worker()
 
-    after 10000 ->
-	    io:format("~w timeout\n",[self()])
+    after 60000 ->
+	    io:format("~w waiting...\n",[self()]),
+	    worker()
+    
     end.
 
 calc_for(M1,M2) -> 

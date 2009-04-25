@@ -13,6 +13,8 @@ h1. single_process
 
 write dets file
 > erl -noshell -s main write_ratings
+22.003879 s
+dets file ~64mb
 
 check timings for calcing first 10 similarity scores
 > erl -noshell -s main calc 1 10 
@@ -67,4 +69,10 @@ h1. seperate_process
 > erl -noshell -s main checksum 1 10
 all the same
 
+h2. multiple worker processes
+write dets file
+
+> erl -noshell -s main write_ratings
+332.485051s (??? x10 longer than single proc, though we were doing 100%)
+dets files 34mb each => total 68mb, a bit more than single file.
 

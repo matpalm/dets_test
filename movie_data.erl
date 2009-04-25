@@ -15,23 +15,26 @@ read_movie_ids() ->
 		end,
     [ ParseLine(Line) || Line <- Lines ].
 
-start() ->
-    File = "movie_ratings." ++ atom_to_list(node()) ++ ".dets",
-    dets:open_file(?RATINGS,[{file,File}]),
+start(N) ->
+    TableName = list_to_atom("movie_ratings_" ++ integer_to_list(N)),
+    put(ratingsTable, TableName),
+    FileName = atom_to_list(TableName) ++ ".dets",
+    io:format("~w opening dets table ~w from file ~w\n",[self(),TableName,FileName]),
+    dets:open_file(TableName,[{file,FileName}]),
     ok.
 
 stop() ->
-    dets:close(?RATINGS),
+    dets:close(get(ratingsTable)),
     ok.
 
 ratings(Id) -> 
-    util:extract_value(dets:lookup(?RATINGS, Id)).
+    util:extract_value(dets:lookup(get(ratingsTable), Id)).
 
 delete_all_ratings() ->
-    dets:delete_all_objects(?RATINGS).
+    dets:delete_all_objects(get(ratingsTable)).
  
 write_movie_ratings(MovieId,Ratings) ->   
-    dets:insert(?RATINGS, {MovieId, Ratings}).
+    dets:insert(get(ratingsTable), {MovieId, Ratings}).
     
 %write_movie_ratings(Ids) ->
 %    lists:foreach(fun(Id) -> write_movie_rating(Id) end, Ids).

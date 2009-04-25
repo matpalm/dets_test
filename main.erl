@@ -15,8 +15,9 @@ calc(Args) ->
     CalcFun = fun() -> 
 		      lists:foreach(
 			fun(Id) -> similarity:calc_all_for(Id,Ids) end,
-			parse_args(Args))
-		      end,
+			parse_args(Args)
+		       )
+	      end,
     util:time("calc similarity", CalcFun),
     similarity:stop(),
     init:stop().
