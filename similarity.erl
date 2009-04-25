@@ -11,7 +11,13 @@ stop() ->
     worker ! stop.
 
 write_movie_ratings(Ids) ->
-    worker ! { write_movie_ratings, Ids }.
+    worker ! delete_all_ratings,
+    lists:foreach(
+      fun(Mid) ->
+	      Ratings = movie_data:ratings_for(Mid),
+	      worker ! { ratings, Mid, Ratings }
+      end,
+      Ids).
 	     
 calc_all_for(Mid, Ids) ->	        
     worker ! { calc_all_for, Mid, Ids, self() },
@@ -29,8 +35,13 @@ worker() ->
 	    io:format("~w stop\n",[self()]),
 	    movie_data:stop(),	    
 	    worker();
-	{write_movie_ratings, Ids} ->
-	    movie_data:write_movie_ratings(Ids),
+	delete_all_ratings ->
+	    io:format("~w deleting ratings\n",[self()]),
+	    movie_data:delete_all_ratings(),
+	    worker();
+	{ratings, Mid, Ratings} ->
+	    io:format("~w writing ~w ratings for movie ~w\n",[self(),length(Ratings),Mid]),
+	    movie_data:write_movie_ratings(Mid,Ratings),
 	    worker();
 	{calc_all_for, Mid, Ids, Pid} ->	
 	    io:format("~w calc_all_for ~w\n",[self(),Mid]),
