@@ -13,9 +13,10 @@ extract_value(Record) ->
 
 
 % split List into N chunks
+% retains order; ie if i<j in original then i<j if in same chunk
 split(List,N) -> 
     Chunks = [ [] || _X <- lists:seq(1,N)],
-    split(List,Chunks,[]).
+    [ lists:reverse(SubList) || SubList <- split(List,Chunks,[])].
 split([],Chunks,Acc) ->
     Chunks ++ Acc;
 split(List,[],Acc) ->
