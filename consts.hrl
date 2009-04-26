@@ -2,4 +2,4 @@
 %-define(RATINGS, "movie_ratings").
 -define(PATH,    "/home/mat/dev/recommend/test_data_large").
 %-define(PATH,    "/data/netflix/").
--define(NUM_WORKERS, 2).
+-define(NUM_WORKERS, 4).

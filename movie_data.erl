@@ -19,7 +19,7 @@ start(N) ->
     TableName = list_to_atom("movie_ratings_" ++ integer_to_list(N)),
     put(ratingsTable, TableName),
     FileName = atom_to_list(TableName) ++ ".dets",
-    io:format("~w opening dets table ~w from file ~w\n",[self(),TableName,FileName]),
+    io:format("~p opening dets table ~p from file ~p\n",[self(),TableName,FileName]),
     dets:open_file(TableName,[{file,FileName}]),
     ok.
 
@@ -49,12 +49,9 @@ ratings_for(MovieId) ->
     {ok,B} = file:read_file(Filename),    
     Lines = string:tokens(binary_to_list(B), "\n"),
     ConvertALine = fun([UserId,Rating,_Date]) -> { list_to_integer(UserId), list_to_integer(Rating) } end,
-    Ratings = [ ConvertALine(split_on_comma(X)) || X <- Lines ],
-    Ratings.
+    Ratings = [ ConvertALine(string:tokens(X,",")) || X <- Lines ],
+    Ratings. 
 
-split_on_comma(Line) ->    
-    string:tokens(Line,",").
-  
 padded(Text,N) when is_integer(Text) ->
     padded(integer_to_list(Text),N);
 padded(Text,N) when length(Text) >= N ->

@@ -1,5 +1,5 @@
 -module(coeff).
--export([pearson/2,summations/2,coeff/2]).
+-export([pearson/2,summations/2,coeff/1,coeff/2,aggregate_coeffs/1]).
 %-compile(export_all).
 
 pearson(A,B) ->
@@ -32,7 +32,11 @@ sums(A,B,{SumA,SumB,SumASq,SumBSq,ProductSum}) ->
      SumASq + (A*A),
      SumBSq + (B*B),
      ProductSum + (A*B)}.
-    
+
+coeff(Coeffs) ->    
+    {Sums,NumCommon} = aggregate_coeffs(Coeffs),
+    coeff(Sums,NumCommon).
+
 coeff(_Sums, 0) ->
     0.0;
 
@@ -48,7 +52,15 @@ coeff({SumA,SumB,SumASq,SumBSq,ProductSum}, NumCommon) ->
 	    Numerator / Denominator
     end.
 
-	
+aggregate_coeffs(Coeffs) ->	
+    aggregate_coeffs(Coeffs,{{0,0,0,0,0},0}).
+aggregate_coeffs([], Acc) ->
+    Acc;
+% cleaner way to do this?
+aggregate_coeffs([{{SA1,SB1,SAS1,SBS1,PS1},NC1}|Coeffs],{{SA2,SB2,SAS2,SBS2,PS2},NC2}) -> 
+    aggregate_coeffs(Coeffs,{{SA1+SA2,SB1+SB2,SAS1+SAS2,SBS1+SBS2,PS1+PS2},NC1+NC2}).
+    
+
 
 
 

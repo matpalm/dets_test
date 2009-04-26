@@ -11,10 +11,8 @@ use large
 
 h1. single_process
 
-write dets file
+write dets file (approx 64mb)
 > erl -noshell -s main write_ratings
-22.003879 s
-dets file ~64mb
 
 check timings for calcing first 10 similarity scores
 > erl -noshell -s main calc 1 10 
@@ -63,16 +61,45 @@ check 10 599.1407156521689
 
 h1. seperate_process
 
+write_ratings not required, same single dets file.
+
+recheck checksums
+> erl -noshell -s main checksum 1 10
+all the same so algo correct
+
+timing check
 > erl -noshell -s main calc 1 10 
 19.372995 s
+not that much slower, probably just allowable variance
 
-> erl -noshell -s main checksum 1 10
-all the same
+h1. multiple worker processes
 
-h2. multiple worker processes
-write dets file
+change NUM_WORKERS in consts.hrl to reflect number of processors/cores
 
+rewrite dets file
 > erl -noshell -s main write_ratings
-332.485051s (??? x10 longer than single proc, though we were doing 100%)
-dets files 34mb each => total 68mb, a bit more than single file.
+
+recheck checksums
+> erl -noshell -s main checksum 1 10
+all ok
+
+timing check
+> erl -noshell -s main calc 1 10 
+15s, and only 30% used...
+
+these are 4 processes in single node,
+try 4 processes across four nodes
+
+start 3 shells;
+bash> erl -sname s2 -setcookie a
+bash> erl -sname s3 -setcookie a
+bash> erl -sname s4 -setcookie a
+
+run app from
+bash> erl -sname s1 -setcookie a -s main calc 1 10
+
+same again, 30% total.
+not 100% util?
+where is the bottleneck?
+i think there is too much messaging overhead and not enough raw calc going on.
 
